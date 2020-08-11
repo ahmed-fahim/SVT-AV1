@@ -2327,7 +2327,11 @@ void copy_api_from_app(
     scs_ptr->static_config.enable_obmc = ((EbSvtAv1EncConfiguration*)config_struct)->enable_obmc;
 #endif
     // RDOQ
+#if RDOQ_CLI
+    scs_ptr->static_config.rdoq_level = ((EbSvtAv1EncConfiguration*)config_struct)->rdoq_level;
+#else
     scs_ptr->static_config.enable_rdoq = ((EbSvtAv1EncConfiguration*)config_struct)->enable_rdoq;
+#endif
 
     // Predictive ME
     scs_ptr->static_config.pred_me  = ((EbSvtAv1EncConfiguration*)config_struct)->pred_me;
@@ -2942,10 +2946,17 @@ static EbErrorType verify_settings(
     }
 
     // RDOQ
+#if RDOQ_CLI
+    if (config->rdoq_level != 0 && config->rdoq_level != 1 && config->rdoq_level != -1) {
+        SVT_LOG("Error instance %u: Invalid RDOQ parameter [-1, 0, 1], your input: %i\n", channel_number + 1, config->rdoq_level);
+        return_error = EB_ErrorBadParameter;
+    }
+#else
     if (config->enable_rdoq != 0 && config->enable_rdoq != 1 && config->enable_rdoq != -1) {
         SVT_LOG( "Error instance %u: Invalid RDOQ parameter [-1, 0, 1], your input: %i\n", channel_number + 1, config->enable_rdoq);
         return_error = EB_ErrorBadParameter;
     }
+#endif
 
     // Chroma Level
     if (config->set_chroma_mode > 3 || config->set_chroma_mode < -1) {
@@ -3235,7 +3246,11 @@ EbErrorType eb_svt_enc_init_parameter(
 #else
     config_ptr->enable_obmc = EB_TRUE;
 #endif
+#if RDOQ_CLI
+    config_ptr->rdoq_level = DEFAULT;
+#else
     config_ptr->enable_rdoq = DEFAULT;
+#endif
     config_ptr->pred_me = DEFAULT;
     config_ptr->bipred_3x3_inject = DEFAULT;
     config_ptr->compound_level = DEFAULT;

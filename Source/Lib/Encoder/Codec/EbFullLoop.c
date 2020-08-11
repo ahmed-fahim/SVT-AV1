@@ -1651,6 +1651,9 @@ int32_t av1_quantize_inv_quantize(
     (void)is_encode_pass;
     (void)coeff_stride;
     (void)is_intra_bc;
+#if RDOQ_CLI
+    SequenceControlSet *scs_ptr = (SequenceControlSet *)pcs_ptr->scs_wrapper_ptr->object_ptr;
+#endif
     MacroblockPlane candidate_plane;
     const QmVal *   q_matrix  = pcs_ptr->parent_pcs_ptr->gqmatrix[NUM_QM_LEVELS - 1][0][txsize];
     const QmVal *   iq_matrix = pcs_ptr->parent_pcs_ptr->giqmatrix[NUM_QM_LEVELS - 1][0][txsize];
@@ -1745,9 +1748,21 @@ int32_t av1_quantize_inv_quantize(
     qparam.iqmatrix  = iq_matrix;
 
     EbBool is_inter     = (pred_mode >= NEARESTMV);
+#if RDOQ_CLI
+    EbBool perform_rdoq;
+
+    // If rdoq_level is specified in the command line instruction, set perform_rdoq accordingly.
+    if (scs_ptr->static_config.rdoq_level != DEFAULT && md_context->pd_pass == PD_PASS_2)
+        perform_rdoq = scs_ptr->static_config.rdoq_level;
+    else {
+        perform_rdoq = ((md_context->md_staging_skip_rdoq == EB_FALSE || is_encode_pass) &&
+            md_context->rdoq_level);
+    }
+#else
     EbBool perform_rdoq = ((md_context->md_staging_skip_rdoq == EB_FALSE || is_encode_pass) &&
         md_context->enable_rdoq);
     SequenceControlSet *scs_ptr = (SequenceControlSet *)pcs_ptr->scs_wrapper_ptr->object_ptr;
+#endif
 
     if (perform_rdoq) {
         if ((bit_depth > EB_8BIT) || (is_encode_pass && scs_ptr->static_config.is_16bit_pipeline)) {

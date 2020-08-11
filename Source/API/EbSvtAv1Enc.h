@@ -398,10 +398,18 @@ typedef struct EbSvtAv1EncConfiguration {
     * Default is 1. */
     EbBool enable_obmc;
 #endif
+
+#if 1 // RDOQ_CLI
+    /* RDOQ
+    *
+    * -1: Default, 0: OFF in PD_PASS_2, 1: Fully ON in PD_PASS_2. */
+    int rdoq_level;
+#else
     /* RDOQ
     *
     * Default is -1. */
     int enable_rdoq;
+#endif
 
 #if 1 // FILTER_INTRA_CLI
     /* Filter intra prediction

@@ -147,7 +147,11 @@ EbErrorType copy_configuration_parameters(EbConfig *config, EbAppContext *callba
 #else
     callback_data->eb_enc_parameters.enable_obmc              = (EbBool)config->enable_obmc;
 #endif
+#if 1 // RDOQ_CLI
+    callback_data->eb_enc_parameters.rdoq_level               = config->rdoq_level;
+#else
     callback_data->eb_enc_parameters.enable_rdoq              = config->enable_rdoq;
+#endif
     callback_data->eb_enc_parameters.pred_me                  = config->pred_me;
     callback_data->eb_enc_parameters.bipred_3x3_inject        = config->bipred_3x3_inject;
     callback_data->eb_enc_parameters.compound_level           = config->compound_level;

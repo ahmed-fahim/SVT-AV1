@@ -657,7 +657,11 @@ set_default_svt_configuration (EbSvtAv1EncConfiguration * svt_config)
   svt_config->set_chroma_mode = -1;
   svt_config->disable_cfl_flag = -1;
   svt_config->obmc_level = 1;
+#if 1 // RDOQ_CLI
+  svt_config->rdoq_level = -1;
+#else
   svt_config->enable_rdoq = -1;
+#endif
   svt_config->filter_intra_level = 1;
   svt_config->enable_intra_edge_filter = -1;
   svt_config->pic_based_rate_est = -1;
