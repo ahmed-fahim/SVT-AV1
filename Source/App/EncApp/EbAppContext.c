@@ -130,7 +130,11 @@ EbErrorType copy_configuration_parameters(EbConfig *config, EbAppContext *callba
 #endif
     callback_data->eb_enc_parameters.enable_mfmv              = config->enable_mfmv;
     callback_data->eb_enc_parameters.enable_redundant_blk     = config->enable_redundant_blk;
+#if 1 // SSSE_CLI
+    callback_data->eb_enc_parameters.spatial_sse_full_loop_level = config->spatial_sse_full_loop_level;
+#else
     callback_data->eb_enc_parameters.spatial_sse_fl           = config->spatial_sse_fl;
+#endif
 #if 0//!REMOVE_ME_SUBPEL_CODE
     callback_data->eb_enc_parameters.enable_subpel            = config->enable_subpel;
 #endif

@@ -645,7 +645,11 @@ set_default_svt_configuration (EbSvtAv1EncConfiguration * svt_config)
   svt_config->enable_smooth = -1;
   svt_config->enable_mfmv = -1;
   svt_config->enable_redundant_blk = -1;
+#if 1 // SSSE_CLI
+  svt_config->spatial_sse_full_loop_level = -1;
+#else
   svt_config->spatial_sse_fl = -1;
+#endif
   svt_config->over_bndry_blk = -1;
   svt_config->new_nearest_comb_inject = -1;
   svt_config->prune_ref_rec_part = -1;

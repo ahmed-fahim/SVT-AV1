@@ -8747,6 +8747,10 @@ void tx_type_search(PictureControlSet *pcs_ptr, ModeDecisionContext *context_ptr
     EbPictureBufferDesc *input_picture_ptr = context_ptr->hbd_mode_decision
         ? pcs_ptr->input_frame16bit
         : pcs_ptr->parent_pcs_ptr->enhanced_picture_ptr;
+#if SSSE_CLI
+    SequenceControlSet *scs_ptr;
+    scs_ptr = (SequenceControlSet*)pcs_ptr->scs_wrapper_ptr->object_ptr;
+#endif
     int32_t seg_qp = pcs_ptr->parent_pcs_ptr->frm_hdr.segmentation_params.segmentation_enabled
         ? pcs_ptr->parent_pcs_ptr->frm_hdr.segmentation_params
               .feature_data[context_ptr->blk_ptr->segment_id][SEG_LVL_ALT_Q]
@@ -8828,9 +8832,19 @@ void tx_type_search(PictureControlSet *pcs_ptr, ModeDecisionContext *context_ptr
     uint8_t default_md_staging_skip_rdoq = context_ptr->md_staging_skip_rdoq;
     if (context_ptr->txt_rdoq)
         context_ptr->md_staging_skip_rdoq = EB_TRUE;
+#if SSSE_CLI
+    uint8_t default_md_staging_spatial_sse_full_loop = context_ptr->md_staging_spatial_sse_full_loop_level;
+    if (scs_ptr->static_config.spatial_sse_full_loop_level == 1 && context_ptr->pd_pass == PD_PASS_2)
+        context_ptr->md_staging_spatial_sse_full_loop_level = scs_ptr->static_config.spatial_sse_full_loop_level;
+    else {
+        if (context_ptr->txt_ssse)
+            context_ptr->md_staging_spatial_sse_full_loop_level = 0;
+    }
+#else
     uint8_t default_md_staging_spatial_sse_full_loop = context_ptr->md_staging_spatial_sse_full_loop;
     if (context_ptr->txt_ssse)
         context_ptr->md_staging_spatial_sse_full_loop = 0;
+#endif
 #endif
 #if UNIFY_TXT
     // local variables for all TX types
@@ -9066,7 +9080,11 @@ void tx_type_search(PictureControlSet *pcs_ptr, ModeDecisionContext *context_ptr
         if (y_has_coeff == 0 && tx_type != DCT_DCT)
             continue;
 
+#if SSSE_CLI
+        if (context_ptr->md_staging_spatial_sse_full_loop_level) {
+#else
         if (context_ptr->md_staging_spatial_sse_full_loop) {
+#endif
             if (y_has_coeff)
                 inv_transform_recon_wrapper(
                     candidate_buffer->prediction_ptr->buffer_y,
@@ -9285,7 +9303,11 @@ void tx_type_search(PictureControlSet *pcs_ptr, ModeDecisionContext *context_ptr
     }
 #if TXT_CONTROL
     context_ptr->md_staging_skip_rdoq = default_md_staging_skip_rdoq;
+#if SSSE_CLI
+    context_ptr->md_staging_spatial_sse_full_loop_level = default_md_staging_spatial_sse_full_loop;
+#else
     context_ptr->md_staging_spatial_sse_full_loop = default_md_staging_spatial_sse_full_loop;
+#endif
 #endif
     //  Best Tx Type Pass
     candidate_buffer->candidate_ptr->transform_type[context_ptr->txb_itr] = best_tx_type;
@@ -10768,13 +10790,24 @@ void md_stage_1(PictureControlSet *pcs_ptr, SuperBlock *sb_ptr, BlkStruct *blk_p
 
     uint32_t full_loop_candidate_index;
     uint32_t cand_index;
+#if SSSE_CLI
+    SequenceControlSet *scs_ptr;
+    scs_ptr = (SequenceControlSet *)pcs_ptr->scs_wrapper_ptr->object_ptr;
+#endif
 
     // Set MD Staging full_loop_core settings
     context_ptr->md_staging_tx_size_mode          = 0;
     context_ptr->md_staging_tx_search             = 0;
     context_ptr->md_staging_skip_full_chroma      = EB_TRUE;
     context_ptr->md_staging_skip_rdoq             = EB_TRUE;
+#if SSSE_CLI
+    if (scs_ptr->static_config.spatial_sse_full_loop_level != DEFAULT && context_ptr->pd_pass == PD_PASS_2)
+        context_ptr->md_staging_spatial_sse_full_loop_level = scs_ptr->static_config.spatial_sse_full_loop_level;
+    else
+        context_ptr->md_staging_spatial_sse_full_loop_level = EB_FALSE;
+#else
     context_ptr->md_staging_spatial_sse_full_loop = EB_FALSE;
+#endif
     for (full_loop_candidate_index = 0;
          full_loop_candidate_index < context_ptr->md_stage_1_count[context_ptr->target_class];
          ++full_loop_candidate_index) {
@@ -10830,6 +10863,10 @@ void md_stage_2(PictureControlSet *pcs_ptr, SuperBlock *sb_ptr, BlkStruct *blk_p
 
     uint32_t fullLoopCandidateIndex;
     uint32_t candidateIndex;
+#if SSSE_CLI
+    SequenceControlSet *scs_ptr;
+    scs_ptr = (SequenceControlSet *)pcs_ptr->scs_wrapper_ptr->object_ptr;
+#endif
 
     // Set MD Staging full_loop_core settings
     for (fullLoopCandidateIndex = 0;
@@ -10867,7 +10904,14 @@ void md_stage_2(PictureControlSet *pcs_ptr, SuperBlock *sb_ptr, BlkStruct *blk_p
 #if ENHANCED_MULTI_PASS_PD_MD_STAGING_SETTINGS
         context_ptr->md_staging_spatial_sse_full_loop = EB_FALSE;
 #else
+#if SSSE_CLI
+        if (scs_ptr->static_config.spatial_sse_full_loop_level != DEFAULT && context_ptr->pd_pass == PD_PASS_2)
+            context_ptr->md_staging_spatial_sse_full_loop_level = scs_ptr->static_config.spatial_sse_full_loop_level;
+        else
+            context_ptr->md_staging_spatial_sse_full_loop_level = EB_FALSE;
+#else
         context_ptr->md_staging_spatial_sse_full_loop     = EB_FALSE;
+#endif
 #endif
 #if FIX_CFL_OFF
 #if REMOVE_CHROMA_INTRA_S0
@@ -11020,6 +11064,11 @@ void md_stage_3(PictureControlSet *pcs_ptr, SuperBlock *sb_ptr, BlkStruct *blk_p
     uint32_t full_loop_candidate_index;
     uint32_t cand_index;
 
+#if SSSE_CLI
+    SequenceControlSet *scs_ptr;
+    scs_ptr = (SequenceControlSet *)pcs_ptr->scs_wrapper_ptr->object_ptr;
+#endif
+
     for (full_loop_candidate_index = 0; full_loop_candidate_index < fullCandidateTotalCount;
          ++full_loop_candidate_index) {
 #if M8_CLEAN_UP
@@ -11089,7 +11138,14 @@ void md_stage_3(PictureControlSet *pcs_ptr, SuperBlock *sb_ptr, BlkStruct *blk_p
         context_ptr->md_staging_skip_full_chroma = EB_FALSE;
 
         context_ptr->md_staging_skip_rdoq             = EB_FALSE;
+#if SSSE_CLI
+        if (scs_ptr->static_config.spatial_sse_full_loop_level != DEFAULT && context_ptr->pd_pass == PD_PASS_2)
+            context_ptr->md_staging_spatial_sse_full_loop_level = scs_ptr->static_config.spatial_sse_full_loop_level;
+        else
+            context_ptr->md_staging_spatial_sse_full_loop_level = context_ptr->spatial_sse_full_loop_level;
+#else
         context_ptr->md_staging_spatial_sse_full_loop = context_ptr->spatial_sse_full_loop;
+#endif
 #if !M8_CLEAN_UP
         if (pcs_ptr->slice_type != I_SLICE) {
             if ((candidate_ptr->type == INTRA_MODE || context_ptr->full_loop_escape == 2) &&

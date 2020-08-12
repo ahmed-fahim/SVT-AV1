@@ -308,10 +308,19 @@ typedef struct EbSvtAv1EncConfiguration {
     *
     * Default is -1. */
     int enable_redundant_blk;
+
+#if 1 // SSSE_CLI
+    /* spatial sse in full loop
+    *
+    * -1: Default, 0: OFF in PD_PASS_2, 1: Fully ON in PD_PASS_2. */
+    int spatial_sse_full_loop_level;
+#else
     /* spatial sse in full loop
     *
     * Default is -1. */
     int spatial_sse_fl;
+#endif
+
 #if 0//!REMOVE_ME_SUBPEL_CODE
     /* subpel
     *

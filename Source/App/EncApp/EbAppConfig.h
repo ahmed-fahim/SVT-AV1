@@ -290,7 +290,11 @@ typedef struct EbConfig {
     /****************************************
       * spatial sse in full loop
      ****************************************/
+#if 1 // SSSE_CLI
+    int spatial_sse_full_loop_level;
+#else
     int spatial_sse_fl;
+#endif
 #if 0//!REMOVE_ME_SUBPEL_CODE
     /****************************************
       * subpel

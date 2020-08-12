@@ -4964,6 +4964,44 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
             context_ptr->interpolation_filter_search_blk_size = 1;
 #endif
 
+#if SSSE_CLI
+    // spatial_sse_full_loop_level | Default Encoder Settings            | Command Line Settings
+    //             0               | OFF subject to possible constraints | OFF in PD_PASS_2
+    //             1               | ON subject to possible constraints  | ON in PD_PASS_2
+    if (pd_pass == PD_PASS_0)
+        context_ptr->spatial_sse_full_loop_level = EB_FALSE;
+    else if (pd_pass == PD_PASS_1)
+        context_ptr->spatial_sse_full_loop_level = EB_FALSE;
+    else if (sequence_control_set_ptr->static_config.spatial_sse_full_loop_level == DEFAULT)
+#if !UNIFY_SC_NSC
+        if (pcs_ptr->parent_pcs_ptr->sc_content_detected)
+#if MAR10_ADOPTIONS
+            if (enc_mode <= ENC_M8)
+#else
+            if (enc_mode <= ENC_M6)
+#endif
+                context_ptr->spatial_sse_full_loop = EB_TRUE;
+            else
+                context_ptr->spatial_sse_full_loop = EB_FALSE;
+#if MAR4_M6_ADOPTIONS
+#if MAR10_ADOPTIONS
+        else if (enc_mode <= ENC_M8)
+#else
+        else if (enc_mode <= ENC_M5)
+#endif
+#else
+        else if (enc_mode <= ENC_M4)
+#endif
+#else
+        if (enc_mode <= ENC_M8)
+#endif
+            context_ptr->spatial_sse_full_loop_level = EB_TRUE;
+        else
+            context_ptr->spatial_sse_full_loop_level = EB_FALSE;
+    else
+        context_ptr->spatial_sse_full_loop_level =
+        sequence_control_set_ptr->static_config.spatial_sse_full_loop_level;
+#else
     // Derive Spatial SSE Flag
     if (pd_pass == PD_PASS_0)
         context_ptr->spatial_sse_full_loop = EB_FALSE;
@@ -4998,6 +5036,7 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     else
         context_ptr->spatial_sse_full_loop =
         sequence_control_set_ptr->static_config.spatial_sse_fl;
+#endif
 
     if (context_ptr->chroma_level <= CHROMA_MODE_1)
         context_ptr->blk_skip_decision = EB_TRUE;

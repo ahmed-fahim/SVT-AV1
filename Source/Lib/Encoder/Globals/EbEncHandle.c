@@ -2288,7 +2288,11 @@ void copy_api_from_app(
     // redundant block
     scs_ptr->static_config.enable_redundant_blk         = ((EbSvtAv1EncConfiguration*)config_struct)->enable_redundant_blk;
     // spatial sse in full loop
+#if SSSE_CLI
+    scs_ptr->static_config.spatial_sse_full_loop_level  = ((EbSvtAv1EncConfiguration*)config_struct)->spatial_sse_full_loop_level;
+#else
     scs_ptr->static_config.spatial_sse_fl               = ((EbSvtAv1EncConfiguration*)config_struct)->spatial_sse_fl;
+#endif
 #if !REMOVE_ME_SUBPEL_CODE
     // subpel
     scs_ptr->static_config.enable_subpel                = ((EbSvtAv1EncConfiguration*)config_struct)->enable_subpel;
@@ -3053,10 +3057,17 @@ static EbErrorType verify_settings(
       return_error = EB_ErrorBadParameter;
     }
 
+#if SSSE_CLI
+    if (config->spatial_sse_full_loop_level != 0 && config->spatial_sse_full_loop_level != 1 && config->spatial_sse_full_loop_level != -1) {
+        SVT_LOG("Error instance %u: Invalid spatial_sse_fl flag [0/1 or -1 for auto], your input: %d\n", channel_number + 1, config->spatial_sse_full_loop_level);
+        return_error = EB_ErrorBadParameter;
+    }
+#else
     if (config->spatial_sse_fl != 0 && config->spatial_sse_fl != 1 && config->spatial_sse_fl != -1) {
       SVT_LOG("Error instance %u: Invalid spatial_sse_fl flag [0/1 or -1 for auto], your input: %d\n", channel_number + 1, config->spatial_sse_fl);
       return_error = EB_ErrorBadParameter;
     }
+#endif
 #if !REMOVE_ME_SUBPEL_CODE
     if (config->enable_subpel != 0 && config->enable_subpel != 1 && config->enable_subpel != -1) {
       SVT_LOG("Error instance %u: Invalid enable_subpel flag [0/1 or -1 for auto], your input: %d\n", channel_number + 1, config->enable_subpel);
@@ -3227,7 +3238,11 @@ EbErrorType eb_svt_enc_init_parameter(
     config_ptr->mrp_level = DEFAULT;
 #endif
     config_ptr->enable_redundant_blk = DEFAULT;
+#if SSSE_CLI
+    config_ptr->spatial_sse_full_loop_level = DEFAULT;
+#else
     config_ptr->spatial_sse_fl = DEFAULT;
+#endif
 #if !REMOVE_ME_SUBPEL_CODE
     config_ptr->enable_subpel = DEFAULT;
 #endif

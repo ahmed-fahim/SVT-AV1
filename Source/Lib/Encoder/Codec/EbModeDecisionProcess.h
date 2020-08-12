@@ -557,7 +557,11 @@ typedef struct ModeDecisionContext {
 #endif
     uint8_t *            cfl_temp_luma_recon;
     uint16_t *           cfl_temp_luma_recon16bit;
+#if SSSE_CLI
+    EbBool               spatial_sse_full_loop_level;
+#else
     EbBool               spatial_sse_full_loop;
+#endif
     EbBool               blk_skip_decision;
 #if RDOQ_CLI
     int8_t               rdoq_level;
@@ -621,7 +625,11 @@ typedef struct ModeDecisionContext {
     EbBool md_staging_tx_search; // 0: skip, 1: use ref cost, 2: no shortcuts
     EbBool md_staging_skip_full_chroma;
     EbBool md_staging_skip_rdoq;
+#if SSSE_CLI
+    EbBool md_staging_spatial_sse_full_loop_level;
+#else
     EbBool md_staging_spatial_sse_full_loop;
+#endif
 #if FIX_CFL_OFF
     EbBool md_staging_perform_intra_chroma_pred;
 #endif
