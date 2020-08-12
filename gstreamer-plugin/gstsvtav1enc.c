@@ -716,7 +716,11 @@ set_default_svt_configuration (EbSvtAv1EncConfiguration * svt_config)
   svt_config->unrestricted_motion_vector = 1;
 
   // alt-ref
+#if 1 // ALTREF_CLI
+  svt_config->tf_level = 1;
+#else
   svt_config->enable_altrefs = TRUE;
+#endif
   svt_config->altref_strength = 5;
   svt_config->altref_nframes = 7;
   svt_config->enable_overlays = FALSE;

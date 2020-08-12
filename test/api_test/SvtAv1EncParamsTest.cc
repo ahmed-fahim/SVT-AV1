@@ -127,7 +127,11 @@ class EncParamTestBase : public ::testing::Test {
             ctxt_.enc_params.speed_control_flag = 1;
         } else if (!param_name_str_.compare("altref_strength") ||
                    !param_name_str_.compare("altref_nframes")) {
+#if ALTREF_CLI
+            ctxt_.enc_params.tf_level = 1;
+#else
             ctxt_.enc_params.enable_altrefs = EB_TRUE;
+#endif
         }
     }
 
@@ -412,8 +416,13 @@ PARAM_TEST(EncParamTileRowsTest);
 DEFINE_PARAM_TEST_CLASS(EncParamScreenContentModeTest, screen_content_mode);
 PARAM_TEST(EncParamScreenContentModeTest);
 
+#if ALTREF_CLI
+/** Test case for tf_level*/
+DEFINE_PARAM_TEST_CLASS(EncParamEnableAltRefsTest, tf_level);
+#else
 /** Test case for enable_altrefs*/
 DEFINE_PARAM_TEST_CLASS(EncParamEnableAltRefsTest, enable_altrefs);
+#endif
 PARAM_TEST(EncParamEnableAltRefsTest);
 
 /** Test case for altref_strength*/

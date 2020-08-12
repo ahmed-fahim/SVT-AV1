@@ -515,6 +515,7 @@ extern "C" {
 #define RDOQ_CLI            1 // CLI support for RDOQ
 #define SSSE_CLI            1 // Improve CLI Support for Spatial SSE
 #define PALETTE_CLI         1 // CLI Support for Palette
+#define ALTREF_CLI         1 // CLI Support for ALTREFA
 #endif
 
 ///////// END SVT-02-TEMP

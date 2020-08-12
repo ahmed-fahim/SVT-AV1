@@ -712,7 +712,13 @@ typedef struct EbSvtAv1EncConfiguration {
 
     /* Variables to control the use of ALT-REF (temporally filtered frames)
     */
+#if 1 // ALTREF_CLI
+    /*
+    * -1: Default; 0: OFF; 1: ON; 2 and 3: Faster levels */
+    int8_t  tf_level;
+#else
     EbBool  enable_altrefs;
+#endif
     uint8_t altref_strength;
     uint8_t altref_nframes;
     EbBool  enable_overlays;

@@ -2767,9 +2767,15 @@ EbErrorType signal_derivation_multi_processes_oq(
 #endif
 #if TF_LEVELS
 #if UNIFY_SC_NSC
+#if ALTREF_CLI
+        uint8_t perform_filtering =
+            (scs_ptr->tf_level && scs_ptr->static_config.pred_structure == EB_PRED_RANDOM_ACCESS && scs_ptr->static_config.hierarchical_levels >= 1)
+            ? 1 : 0;
+#else
     uint8_t perform_filtering =
         (scs_ptr->enable_altrefs == EB_TRUE && scs_ptr->static_config.pred_structure == EB_PRED_RANDOM_ACCESS && scs_ptr->static_config.hierarchical_levels >= 1)
         ? 1 : 0;
+#endif
 #else
 #if UPGRADE_M6_M7_M8
     uint8_t perform_filtering =
@@ -2783,7 +2789,111 @@ EbErrorType signal_derivation_multi_processes_oq(
 #endif
 #endif
 
+#if ALTREF_CLI
+// tf_level is used to indicate whether temporal filtering is to be used,
+// and if so, what level of the feature to consider.
 
+// tf_level controls through the function set_tf_controls whether the feature is enabled or not,
+// and the total number of pictures (window_size) to consider in temporal filtering, including the current frame,
+// and whether to adjust the window size based on noise characteristics.
+// Level 0 corresponds to temporal filtering being OFF.
+// Levels 1, 2 and 3 correspond to feature active with fewer pictures considered in the temporal filtering operations.
+
+// In the table below, ON refers to temporal filtering performed for temporal layer 0 pictures
+// and (for pictures in temporal layer 1 in at least a 4-layer prediction structure)
+
+//    tf_level   |                  Default Encoder Settings                   |  Command Line Settings
+//       0       | OFF subject to possible constraints                         |  OFF
+//       1       | ON subject to possible constraints                          |  ON
+//       2       | ON with smaller window_size subject to possible constraints |  ON with smaller window_size
+//       3       | ON with smaller window_size subject to possible constraints |  ON with even smaller window_size
+#if IMPROVED_TF_LEVELS
+    if (perform_filtering) {
+        if (scs_ptr->static_config.tf_level == DEFAULT) {
+#if JUNE26_ADOPTIONS
+            if (pcs_ptr->enc_mode <= ENC_M5) {
+#else
+#if JUNE25_ADOPTIONS
+            if (pcs_ptr->enc_mode <= ENC_M4) {
+#else
+            if (pcs_ptr->enc_mode <= ENC_M5) {
+#endif
+#endif
+                if (pcs_ptr->temporal_layer_index == 0 || (pcs_ptr->temporal_layer_index == 1 && scs_ptr->static_config.hierarchical_levels >= 3))
+                    context_ptr->tf_level = 1;
+                else
+                    context_ptr->tf_level = 0;
+            }
+            else if (pcs_ptr->enc_mode <= ENC_M6) {
+                if (pcs_ptr->temporal_layer_index == 0 || (pcs_ptr->temporal_layer_index == 1 && scs_ptr->static_config.hierarchical_levels >= 3))
+                    context_ptr->tf_level = 2;
+                else
+                    context_ptr->tf_level = 0;
+            }
+            else {
+                if (pcs_ptr->temporal_layer_index == 0 || (pcs_ptr->temporal_layer_index == 1 && scs_ptr->static_config.hierarchical_levels >= 3))
+                    context_ptr->tf_level = 3;
+                else
+                    context_ptr->tf_level = 0;
+            }
+        }
+        else {
+            if (pcs_ptr->temporal_layer_index == 0 || (pcs_ptr->temporal_layer_index == 1 && scs_ptr->static_config.hierarchical_levels >= 3))
+                context_ptr->tf_level = scs_ptr->static_config.tf_level;
+            else
+                context_ptr->tf_level = 0;
+        }
+     }
+    else
+        context_ptr->tf_level = 0;
+#else
+    if (perform_filtering) {
+#if UPGRADE_M6_M7_M8
+#if PRESET_SHIFITNG
+        if (pcs_ptr->enc_mode <= ENC_M5) {
+#else
+        if (pcs_ptr->enc_mode <= ENC_M7) {
+#endif
+            if (pcs_ptr->temporal_layer_index == 0 || (pcs_ptr->temporal_layer_index == 1 && scs_ptr->static_config.hierarchical_levels >= 3))
+                context_ptr->tf_level = 0;
+            else
+                context_ptr->tf_level = 3;
+        }
+        else {
+#if ADD_SKIP_INTRA_SIGNAL
+            if (pcs_ptr->enc_mode <= ENC_M6) {
+                if (pcs_ptr->temporal_layer_index == 0)
+                    context_ptr->tf_level = 0;
+                else
+                    context_ptr->tf_level = 3;
+            }
+            else
+                context_ptr->tf_level = 3;
+#else
+            if (pcs_ptr->temporal_layer_index == 0)
+                context_ptr->tf_level = 0;
+            else
+                context_ptr->tf_level = 3;
+#endif
+        }
+#else
+#if UPGRADE_M8
+        if (pcs_ptr->enc_mode <= ENC_M8) {
+#else
+        if (pcs_ptr->enc_mode <= ENC_M5) {
+#endif
+            context_ptr->tf_level = 0;
+        }
+        else {
+            context_ptr->tf_level = 2;
+        }
+#endif
+        }
+    else
+        context_ptr->tf_level = 3;
+#endif
+    set_tf_controls(context_ptr, context_ptr->tf_level);
+#else
 #if IMPROVED_TF_LEVELS
     if (perform_filtering) {
 #if JUNE26_ADOPTIONS
@@ -2863,6 +2973,8 @@ EbErrorType signal_derivation_multi_processes_oq(
 #endif
     set_tf_controls(context_ptr, context_ptr->tf_level);
 #endif
+#endif
+
 #if ON_OFF_FEATURE_MRP
     // MRP control
     // 0: OFF (1,1)  ; override features

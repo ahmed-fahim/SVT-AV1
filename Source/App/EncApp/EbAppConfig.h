@@ -509,7 +509,11 @@ typedef struct EbConfig {
     /****************************************
      * ALT-REF related Parameters
      ****************************************/
+#if 1 // ALTREF_CLI
+    int8_t tf_level;
+#else
     EbBool  enable_altrefs;
+#endif
     uint8_t altref_strength;
     uint8_t altref_nframes;
     EbBool  enable_overlays;

@@ -1043,9 +1043,15 @@ static const vector<uint32_t> invalid_screen_content_mode = {3};
 
 /* Variables to control the use of ALT-REF (temporally filtered frames)
  */
+#if ALTREF_CLI
+static const vector<int8_t> default_tf_level = { DEFAULT };
+static const vector<int8_t> valid_tf_level = { DEFAULT, 0, 1, 2, 3 };
+static const vector<int8_t> invalid_tf_level = { -2, 4 };
+#else
 static const vector<EbBool> default_enable_altrefs = {EB_TRUE};
 static const vector<EbBool> valid_enable_altrefs = {EB_FALSE, EB_TRUE};
 static const vector<EbBool> invalid_enable_altrefs = {/*none*/};
+#endif
 
 static const vector<uint8_t> default_altref_strength = {5};
 static const vector<uint8_t> valid_altref_strength = {0, 1, 2, 3, 4, 5, 6};

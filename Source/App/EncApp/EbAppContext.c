@@ -220,7 +220,11 @@ EbErrorType copy_configuration_parameters(EbConfig *config, EbAppContext *callba
         config->unrestricted_motion_vector;
     callback_data->eb_enc_parameters.recon_enabled = config->recon_file ? EB_TRUE : EB_FALSE;
     // --- start: ALTREF_FILTERING_SUPPORT
+#if 1 // ALTREF_CLI
+    callback_data->eb_enc_parameters.tf_level = (int8_t)config->tf_level;
+#else
     callback_data->eb_enc_parameters.enable_altrefs  = (EbBool)config->enable_altrefs;
+#endif
     callback_data->eb_enc_parameters.altref_strength = config->altref_strength;
     callback_data->eb_enc_parameters.altref_nframes  = config->altref_nframes;
     callback_data->eb_enc_parameters.enable_overlays = (EbBool)config->enable_overlays;

@@ -139,7 +139,11 @@
 #define SCREEN_CONTENT_TOKEN "-scm"
 #define INTRABC_MODE_TOKEN "-intrabc-mode"
 // --- start: ALTREF_FILTERING_SUPPORT
+#if 1 // ALTREF_CLI
+#define TF_LEVEL "-tf-level"
+#else
 #define ENABLE_ALTREFS "-enable-altrefs"
+#endif
 #define ALTREF_STRENGTH "-altref-strength"
 #define ALTREF_NFRAMES "-altref-nframes"
 #define ENABLE_OVERLAYS "-enable-overlays"
@@ -644,9 +648,15 @@ static void set_intrabc_mode(const char *value, EbConfig *cfg) {
     cfg->intrabc_mode = strtol(value, NULL, 0);
 };
 // --- start: ALTREF_FILTERING_SUPPORT
+#if 1 // ALTREF_CLI
+static void set_tf_level(const char *value, EbConfig *cfg) {
+    cfg->tf_level = (int8_t)strtoul(value, NULL, 0);
+};
+#else
 static void set_enable_altrefs(const char *value, EbConfig *cfg) {
     cfg->enable_altrefs = (EbBool)strtoul(value, NULL, 0);
 };
+#endif
 static void set_altref_strength(const char *value, EbConfig *cfg) {
     cfg->altref_strength = (uint8_t)strtoul(value, NULL, 0);
 };
@@ -1306,10 +1316,17 @@ ConfigEntry config_entry_specific[] = {
      "equal the total search height and amount equals the search regions)",
      set_hme_level_2_search_area_in_height_array},
     // --- start: ALTREF_FILTERING_SUPPORT
+#if 1 // ALTREF_CLI
+     {SINGLE_INPUT,
+      TF_LEVEL,
+      "Set altref level",
+      set_tf_level},
+#else
     {SINGLE_INPUT,
      ENABLE_ALTREFS,
      "Enable automatic alt reference frames(0: OFF, 1: ON[default])",
      set_enable_altrefs},
+#endif
     {SINGLE_INPUT,
      ALTREF_STRENGTH,
      "AltRef filter strength([0-6], default: 5)",
@@ -1602,7 +1619,11 @@ ConfigEntry config_entry[] = {
      "HmeLevel2SearchAreaInHeight",
      set_hme_level_2_search_area_in_height_array},
     // --- start: ALTREF_FILTERING_SUPPORT
+#if 1 // ALTREF_CLI
+    {SINGLE_INPUT, TF_LEVEL, "TfLevel", set_tf_level},
+#else
     {SINGLE_INPUT, ENABLE_ALTREFS, "EnableAltRefs", set_enable_altrefs},
+#endif
     {SINGLE_INPUT, ALTREF_STRENGTH, "AltRefStrength", set_altref_strength},
     {SINGLE_INPUT, ALTREF_NFRAMES, "AltRefNframes", set_altref_n_frames},
     {SINGLE_INPUT, ENABLE_OVERLAYS, "EnableOverlays", set_enable_overlays},
@@ -1854,7 +1875,11 @@ void eb_config_ctor(EbConfig *config_ptr) {
     config_ptr->unrestricted_motion_vector = EB_TRUE;
 
     // --- start: ALTREF_FILTERING_SUPPORT
+#if 1 // ALTREF_CLI
+    config_ptr->tf_level = DEFAULT;
+#else
     config_ptr->enable_altrefs  = EB_TRUE;
+#endif
     config_ptr->altref_strength = 5;
 #if 1//NOISE_BASED_TF_FRAMES
     config_ptr->altref_nframes = 13;
