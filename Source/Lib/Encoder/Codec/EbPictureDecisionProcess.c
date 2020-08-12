@@ -1700,6 +1700,109 @@ EbErrorType signal_derivation_multi_processes_oq(
         pcs_ptr->ibc_mode = 0; // OFF
     }
 
+#if PALETTE_CLI
+    /* Palette Levels:
+    The levels below apply to the default configuration and maybe subject to some constraints
+    When specified in the command line the levels would apply only to PD_PASS_2
+     0:OFF
+     1:Slow    NIC=7/4/4
+     2:        NIC=7/2/2
+     3:        NIC=7/2/2 + No K means for non ref
+     4:        NIC=4/2/1
+     5:        NIC=4/2/1 + No K means for Inter frame
+     6:Fastest NIC=4/2/1 + No K means for non base + step for non base for most dominent
+
+ */
+    if (frm_hdr->allow_screen_content_tools)
+        if (scs_ptr->static_config.palette_level == -1)//auto mode; if not set by cfg
+#if PALETTE_SYNCH
+            pcs_ptr->palette_level =
+            (frm_hdr->allow_screen_content_tools) &&
+#if MAR4_M3_ADOPTIONS
+#if MAR10_ADOPTIONS
+#if M8_PALETTE
+#if UPGRADE_M6_M7_M8
+#if M1_SC_ADOPTION
+#if REVERT_WHITE // palette_mode
+#if MAY19_ADOPTIONS
+#if JUNE23_ADOPTIONS
+            ((pcs_ptr->enc_mode <= ENC_M3) || (pcs_ptr->temporal_layer_index == 0 && pcs_ptr->enc_mode <= ENC_M8))
+#else
+#if NEW_M8
+            ((pcs_ptr->enc_mode <= ENC_M3) || (pcs_ptr->is_used_as_reference_flag && pcs_ptr->enc_mode <= ENC_M4) ||
+            (pcs_ptr->temporal_layer_index == 0 && pcs_ptr->enc_mode <= ENC_M8))
+#else
+#if UNIFY_SC_NSC
+            ((pcs_ptr->enc_mode <= ENC_M3) || (pcs_ptr->is_used_as_reference_flag && pcs_ptr->enc_mode <= ENC_M4) ||
+            (pcs_ptr->temporal_layer_index == 0 && pcs_ptr->enc_mode <= ENC_M7))
+#else
+#if JUNE17_ADOPTIONS
+            ((pcs_ptr->enc_mode <= ENC_M3) || (pcs_ptr->is_used_as_reference_flag && pcs_ptr->enc_mode <= ENC_M4) ||
+            (pcs_ptr->temporal_layer_index == 0 && pcs_ptr->enc_mode <= ENC_M6))
+#else
+#if JUNE15_ADOPTIONS
+            ((pcs_ptr->enc_mode <= ENC_M0) || (pcs_ptr->is_used_as_reference_flag && pcs_ptr->enc_mode <= ENC_M4) ||
+#else
+#if PRESET_SHIFITNG
+            (MR_MODE || (pcs_ptr->is_used_as_reference_flag && pcs_ptr->enc_mode <= ENC_M4) ||
+#else
+                (MR_MODE || (pcs_ptr->is_used_as_reference_flag && pcs_ptr->enc_mode <= ENC_M6) ||
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#if !JUNE17_ADOPTIONS
+#if PRESET_SHIFITNG
+                (pcs_ptr->slice_type == I_SLICE && pcs_ptr->enc_mode <= ENC_M5))
+#else
+                    (pcs_ptr->slice_type == I_SLICE && pcs_ptr->enc_mode <= ENC_M7))
+#endif
+#endif
+#else
+#if MAY16_7PM_ADOPTIONS
+            ((pcs_ptr->is_used_as_reference_flag && pcs_ptr->enc_mode <= ENC_M6) ||
+                (pcs_ptr->slice_type == I_SLICE && pcs_ptr->enc_mode <= ENC_M7))
+#else
+#if APR25_3AM_ADOPTIONS
+            (pcs_ptr->enc_mode <= ENC_M0 || (pcs_ptr->is_used_as_reference_flag && pcs_ptr->enc_mode <= ENC_M6) ||
+                (pcs_ptr->slice_type == I_SLICE && pcs_ptr->enc_mode <= ENC_M7))
+#else
+                (pcs_ptr->enc_mode <= ENC_M0 || (pcs_ptr->is_used_as_reference_flag && pcs_ptr->enc_mode <= ENC_M7))
+#endif
+#endif
+#endif
+#else
+            (pcs_ptr->enc_mode <= ENC_M0 || pcs_ptr->is_used_as_reference_flag)
+#endif
+#else
+            (pcs_ptr->enc_mode <= ENC_M5 || pcs_ptr->is_used_as_reference_flag)
+#endif
+#else
+                pcs_ptr->enc_mode <= ENC_M5
+#endif
+#else
+                pcs_ptr->enc_mode <= ENC_M8
+#endif
+#else
+                pcs_ptr->enc_mode <= ENC_M3
+#endif
+#else
+                pcs_ptr->enc_mode <= ENC_M1
+#endif
+
+                ? 6 : 0;
+#else
+                pcs_ptr->palette_mode = pcs_ptr->enc_mode <= ENC_M1 ? 6 : 0;
+#endif
+        else
+                pcs_ptr->palette_level = scs_ptr->static_config.palette_level;
+    else
+                pcs_ptr->palette_level = 0;
+
+    assert(pcs_ptr->palette_level < 7);
+#else
    /*Palette Modes:
         0:OFF
         1:Slow    NIC=7/4/4
@@ -1799,6 +1902,7 @@ EbErrorType signal_derivation_multi_processes_oq(
         pcs_ptr->palette_mode = 0;
 
     assert(pcs_ptr->palette_mode<7);
+#endif
 
     if (!pcs_ptr->scs_ptr->static_config.disable_dlf_flag && frm_hdr->allow_intrabc == 0) {
 #if MAR2_M8_ADOPTIONS

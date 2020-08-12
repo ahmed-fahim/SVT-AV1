@@ -151,7 +151,11 @@
 #define SUPERRES_QTHRES "-superres-qthres"
 // --- end: SUPER-RESOLUTION SUPPORT
 #define HBD_MD_ENABLE_TOKEN "-hbd-md"
+#if 1 // PALETTE_CLI
+#define PALETTE_TOKEN "-palette-level"
+#else
 #define PALETTE_TOKEN "-palette"
+#endif
 #define OLPD_REFINEMENT_TOKEN "-olpd-refinement"
 #define HDR_INPUT_TOKEN "-hdr"
 #define RATE_CONTROL_ENABLE_TOKEN "-rc"
@@ -674,9 +678,15 @@ static void set_enable_hbd_mode_decision(const char *value, EbConfig *cfg) {
     cfg->enable_hbd_mode_decision = (int8_t)strtoul(value, NULL, 0);
 #endif
 };
+#if 1 // PALETTE_CLI
+static void set_palette_level(const char *value, EbConfig *cfg) {
+    cfg->palette_level = (int32_t)strtoul(value, NULL, 0);
+};
+#else
 static void set_enable_palette(const char *value, EbConfig *cfg) {
     cfg->enable_palette = (int32_t)strtol(value, NULL, 0);
 };
+#endif
 static void set_high_dynamic_range_input(const char *value, EbConfig *cfg) {
     cfg->high_dynamic_range_input = strtol(value, NULL, 0);
 };
@@ -1231,10 +1241,17 @@ ConfigEntry config_entry_specific[] = {
      HBD_MD_ENABLE_TOKEN,
      "Enable high bit depth mode decision(0: OFF, 1: ON partially[default],2: fully ON)",
      set_enable_hbd_mode_decision},
+#if 1 // PALETTE_CLI
+    {SINGLE_INPUT,
+     PALETTE_TOKEN,
+     "Set palette prediction mode(-1: default or [0-6])",
+     set_palette_level},
+#else
     {SINGLE_INPUT,
      PALETTE_TOKEN,
      "Set palette prediction mode(-1: default or [0-6])",
      set_enable_palette},
+#endif
     // Optional Features
     {SINGLE_INPUT,
      UNRESTRICTED_MOTION_VECTOR,
@@ -1530,7 +1547,11 @@ ConfigEntry config_entry[] = {
     {SINGLE_INPUT, SCREEN_CONTENT_TOKEN, "ScreenContentMode", set_screen_content_mode},
     {SINGLE_INPUT, INTRABC_MODE_TOKEN, "IntraBCMode", set_intrabc_mode},
     {SINGLE_INPUT, HBD_MD_ENABLE_TOKEN, "HighBitDepthModeDecision", set_enable_hbd_mode_decision},
+#if 1 // PALETTE_CLI
+    {SINGLE_INPUT, PALETTE_TOKEN, "PaletteLevel", set_palette_level},
+#else
     {SINGLE_INPUT, PALETTE_TOKEN, "PaletteMode", set_enable_palette},
+#endif
     // Thread Management
     {SINGLE_INPUT, THREAD_MGMNT, "LogicalProcessors", set_logical_processors},
     {SINGLE_INPUT, UNPIN_TOKEN, "UnpinExecution", set_unpin_execution},
@@ -1817,7 +1838,11 @@ void eb_config_ctor(EbConfig *config_ptr) {
     config_ptr->enable_hbd_mode_decision                  = 2;
 #endif
     config_ptr->intrabc_mode                              = DEFAULT;
+#if 1 // PALETTE_CLI
+    config_ptr->palette_level                             = DEFAULT;
+#else
     config_ptr->enable_palette                            = -1;
+#endif
     config_ptr->injector_frame_rate                       = 60 << 16;
 
     // ASM Type

@@ -679,7 +679,11 @@ set_default_svt_configuration (EbSvtAv1EncConfiguration * svt_config)
   svt_config->search_area_width = 16;
   svt_config->search_area_height = 7;
   svt_config->enable_hbd_mode_decision = 1;
+#if 1 // PALETTE_CLI
+  svt_config->palette_level = -1;
+#else
   svt_config->enable_palette = -1;
+#endif
   // HME parameters
   svt_config->number_hme_search_region_in_width = 2;
   svt_config->number_hme_search_region_in_height = 2;

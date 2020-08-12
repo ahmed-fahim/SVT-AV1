@@ -6418,7 +6418,11 @@ EbErrorType generate_md_stage_0_cand(
             &cand_total_cnt
         );
 #if SHUT_PALETTE_BC_PD_PASS_0_1
+#if PALETTE_CLI
+    if (context_ptr->md_palette_level) {
+#else
     if (context_ptr->md_palette_mode) {
+#endif
 #endif
     //can be removed later if need be
     for (uint16_t i = 0; i < cand_total_cnt; i++) {
@@ -6430,7 +6434,11 @@ EbErrorType generate_md_stage_0_cand(
 #endif
     }
 #if SHUT_PALETTE_BC_PD_PASS_0_1
+#if PALETTE_CLI
+    if (svt_av1_allow_palette(context_ptr->md_palette_level, context_ptr->blk_geom->bsize)) {
+#else
     if (svt_av1_allow_palette(context_ptr->md_palette_mode, context_ptr->blk_geom->bsize)) {
+#endif
 #else
     if (svt_av1_allow_palette(pcs_ptr->parent_pcs_ptr->palette_mode, context_ptr->blk_geom->bsize)) {
 #endif
@@ -6769,7 +6777,11 @@ uint32_t product_full_mode_decision(
             eb_memcpy(&blk_ptr->palette_info.pmi, &candidate_ptr->palette_info.pmi, sizeof(PaletteModeInfo));
 #endif
 #if SHUT_PALETTE_BC_PD_PASS_0_1
+#if PALETTE_CLI
+            if (svt_av1_allow_palette(context_ptr->md_palette_level, context_ptr->blk_geom->bsize))
+#else
             if (svt_av1_allow_palette(context_ptr->md_palette_mode, context_ptr->blk_geom->bsize))
+#endif
 #else
             if(svt_av1_allow_palette(context_ptr->sb_ptr->pcs_ptr->parent_pcs_ptr->palette_mode, context_ptr->blk_geom->bsize))
 #endif

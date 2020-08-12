@@ -6488,6 +6488,15 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
     else
         context_ptr->md_allow_intrabc = pcs_ptr->parent_pcs_ptr->frm_hdr.allow_intrabc;
 
+#if PALETTE_CLI
+    // Set md_palette_level @ MD
+    if (pd_pass == PD_PASS_0)
+        context_ptr->md_palette_level = 0;
+    else if (pd_pass == PD_PASS_1)
+        context_ptr->md_palette_level = 0;
+    else
+        context_ptr->md_palette_level = pcs_ptr->parent_pcs_ptr->palette_level;
+#else
     // Set md_palette_mode @ MD
     if (pd_pass == PD_PASS_0)
         context_ptr->md_palette_mode = 0;
@@ -6495,6 +6504,7 @@ EbErrorType signal_derivation_enc_dec_kernel_oq(
         context_ptr->md_palette_mode = 0;
     else
         context_ptr->md_palette_mode = pcs_ptr->parent_pcs_ptr->palette_mode;
+#endif
 #endif
     // intra_similar_mode
     // 0: OFF

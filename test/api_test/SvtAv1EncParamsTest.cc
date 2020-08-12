@@ -316,8 +316,13 @@ PARAM_TEST(EncParamSearchAreaWidthTest);
 DEFINE_PARAM_TEST_CLASS(EncParamSearchAreaHeightTest, search_area_height);
 PARAM_TEST(EncParamSearchAreaHeightTest);
 
+#if PALETTE_CLI
+/** Test case for palette_level*/
+DEFINE_PARAM_TEST_CLASS(EncParamEnablePaletteTest, palette_level);
+#else
 /** Test case for enable_palette*/
 DEFINE_PARAM_TEST_CLASS(EncParamEnablePaletteTest, enable_palette);
+#endif
 PARAM_TEST(EncParamEnablePaletteTest);
 
 /** Test case for rate_control_mode*/

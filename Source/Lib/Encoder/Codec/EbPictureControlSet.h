@@ -824,7 +824,11 @@ typedef struct PictureParentControlSet {
 #if !DEPTH_PART_CLEAN_UP
     uint8_t             nsq_search_level;
 #endif
+#if PALETTE_CLI
+    uint8_t             palette_level;
+#else
     uint8_t             palette_mode;
+#endif
 #if !DEPTH_PART_CLEAN_UP
     uint8_t             nsq_max_shapes_md; // max number of shapes to be tested in MD
 #endif

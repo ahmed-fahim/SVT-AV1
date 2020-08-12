@@ -607,9 +607,15 @@ static const vector<uint32_t> invalid_search_area_height = {
  * 6:Fastest NIC=4/2/1 + No K means for non base + step for non base for
  * most dominant
  * Default is -1. */
+#if PALETTE_CLI
+static const vector<int32_t> default_palette_level = { -1 };
+static const vector<int32_t> valid_palette_level = { -1, 0, 1, 2, 3, 4, 5, 6 };
+static const vector<int32_t> invalid_palette_level = { -2, 7 };
+#else
 static const vector<int32_t> default_enable_palette = {-1};
 static const vector<int32_t> valid_enable_palette = {-1, 0, 1, 2, 3, 4, 5, 6};
 static const vector<int32_t> invalid_enable_palette = {-2, 7};
+#endif
 
 /* Enable the use of Constrained Intra, which yields sending two picture
  * parameter sets in the elementary streams .

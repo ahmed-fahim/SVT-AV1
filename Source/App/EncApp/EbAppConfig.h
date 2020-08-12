@@ -434,7 +434,11 @@ typedef struct EbConfig {
      * MD Parameters
      ****************************************/
     int8_t  enable_hbd_mode_decision;
+#if 1 // PALETTE_CLI
+    int32_t palette_level;
+#else
     int32_t enable_palette;
+#endif
     int32_t tile_columns;
     int32_t tile_rows;
 
