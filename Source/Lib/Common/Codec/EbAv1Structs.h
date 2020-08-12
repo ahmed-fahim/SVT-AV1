@@ -224,7 +224,11 @@ typedef struct SeqHeader {
 
     /*!< 1: Specifies that cdef filtering may be enabled.
          0: specifies that cdef filtering is disabled */
+#if CDEF_CLI
+    uint8_t cdef_level;
+#else
     uint8_t enable_cdef;
+#endif
 
     /*!< 1: Specifies that loop restoration filtering may be enabled.
          0: Specifies that loop restoration filtering is disabled*/

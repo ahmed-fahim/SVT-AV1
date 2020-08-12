@@ -224,14 +224,26 @@ void cdef_seg_search(PictureControlSet *pcs_ptr, SequenceControlSet *scs_ptr,
                             stride_src[pli],
                             ysize,
                             xsize);
+#if CDEF_CLI
+                gi_step = get_cdef_gi_step(ppcs->cdef_level);
+#else
                 gi_step  = get_cdef_gi_step(ppcs->cdef_filter_mode);
+#endif
                 mid_gi   = ppcs->cdf_ref_frame_strength;
+#if CDEF_CLI
+                start_gi = ppcs->use_ref_frame_cdef_strength && ppcs->cdef_level == 5
+#else
                 start_gi = ppcs->use_ref_frame_cdef_strength && ppcs->cdef_filter_mode == 1
+#endif
                                ? (AOMMAX(0, mid_gi - gi_step))
                                : 0;
                 end_gi = ppcs->use_ref_frame_cdef_strength
                              ? AOMMIN(total_strengths, mid_gi + gi_step)
+#if CDEF_CLI
+                             : ppcs->cdef_level == 5 ? 8 : total_strengths;
+#else
                              : ppcs->cdef_filter_mode == 1 ? 8 : total_strengths;
+#endif
 
                 for (gi = start_gi; gi < end_gi; gi++) {
                     int32_t  threshold;
@@ -424,6 +436,16 @@ void cdef_seg_search16bit(PictureControlSet *pcs_ptr, SequenceControlSet *scs_pt
                              stride_src[pli],
                              ysize,
                              xsize);
+#if CDEF_CLI
+                gi_step = get_cdef_gi_step(ppcs->cdef_level);
+                mid_gi = ppcs->cdf_ref_frame_strength;
+                start_gi = ppcs->use_ref_frame_cdef_strength && ppcs->cdef_level == 5
+                                ? (AOMMAX(0, mid_gi - gi_step))
+                                : 0;
+                end_gi = ppcs->use_ref_frame_cdef_strength
+                                ? AOMMIN(total_strengths, mid_gi + gi_step)
+                                : ppcs->cdef_level == 5 ? 8 : total_strengths;
+#else
                 gi_step  = get_cdef_gi_step(ppcs->cdef_filter_mode);
                 mid_gi   = ppcs->cdf_ref_frame_strength;
                 start_gi = ppcs->use_ref_frame_cdef_strength && ppcs->cdef_filter_mode == 1
@@ -432,6 +454,7 @@ void cdef_seg_search16bit(PictureControlSet *pcs_ptr, SequenceControlSet *scs_pt
                 end_gi = ppcs->use_ref_frame_cdef_strength
                              ? AOMMIN(total_strengths, mid_gi + gi_step)
                              : ppcs->cdef_filter_mode == 1 ? 8 : total_strengths;
+#endif
 
                 for (gi = start_gi; gi < end_gi; gi++) {
                     int32_t  threshold;
@@ -516,7 +539,11 @@ void *cdef_kernel(void *input_ptr) {
         Av1Common *cm       = pcs_ptr->parent_pcs_ptr->av1_cm;
         frm_hdr             = &pcs_ptr->parent_pcs_ptr->frm_hdr;
 
+#if CDEF_CLI
+        if (scs_ptr->seq_header.cdef_level && pcs_ptr->parent_pcs_ptr->cdef_level) {
+#else
         if (scs_ptr->seq_header.enable_cdef && pcs_ptr->parent_pcs_ptr->cdef_filter_mode) {
+#endif
             if (scs_ptr->static_config.is_16bit_pipeline || is_16bit)
                 cdef_seg_search16bit(pcs_ptr, scs_ptr, dlf_results_ptr->segment_index);
             else
@@ -529,7 +556,11 @@ void *cdef_kernel(void *input_ptr) {
         pcs_ptr->tot_seg_searched_cdef++;
         if (pcs_ptr->tot_seg_searched_cdef == pcs_ptr->cdef_segments_total_count) {
             // SVT_LOG("    CDEF all seg here  %i\n", pcs_ptr->picture_number);
+#if CDEF_CLI
+            if (scs_ptr->seq_header.cdef_level && pcs_ptr->parent_pcs_ptr->cdef_level) {
+#else
             if (scs_ptr->seq_header.enable_cdef && pcs_ptr->parent_pcs_ptr->cdef_filter_mode) {
+#endif
                 int32_t selected_strength_cnt[64] = {0};
                 finish_cdef_search(0, pcs_ptr, selected_strength_cnt);
 

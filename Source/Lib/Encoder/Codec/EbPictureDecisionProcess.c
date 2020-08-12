@@ -1941,6 +1941,75 @@ EbErrorType signal_derivation_multi_processes_oq(
     else
         pcs_ptr->loop_filter_mode = 0;
 
+#if CDEF_CLI
+    // CDEF Level                                   Settings
+    // 0                                            OFF
+    // 1                                            16 step refinement
+    // 2                                            16 step refinement
+    // 3                                            8 step refinement
+    // 4                                            4 step refinement
+    // 5                                            1 step refinement
+    if (scs_ptr->seq_header.cdef_level && frm_hdr->allow_intrabc == 0) {
+        if (scs_ptr->static_config.cdef_level == DEFAULT) {
+#if MAR17_ADOPTIONS
+#if M8_CDEF
+#if !UNIFY_SC_NSC
+            if (pcs_ptr->sc_content_detected)
+#if UPGRADE_M6_M7_M8
+#if PRESET_SHIFITNG
+                if (pcs_ptr->enc_mode <= ENC_M5)
+#else
+                if (pcs_ptr->enc_mode <= ENC_M7)
+#endif
+                    pcs_ptr->cdef_level = 1;
+                else
+#if M5_I_CDEF
+                    pcs_ptr->cdef_level = pcs_ptr->slice_type == I_SLICE ? 1 : 4;
+#else
+                    pcs_ptr->cdef_filter_mode = 2;
+#endif
+#else
+                pcs_ptr->cdef_filter_mode = 5;
+#endif
+            else
+#endif
+#if UPGRADE_M6_M7_M8
+#if PRESET_SHIFITNG
+                if (pcs_ptr->enc_mode <= ENC_M5)
+#else
+                if (pcs_ptr->enc_mode <= ENC_M7)
+#endif
+#else
+                if (pcs_ptr->enc_mode <= ENC_M5)
+#endif
+                    pcs_ptr->cdef_level = 1;
+                else
+#if M5_I_CDEF
+                    pcs_ptr->cdef_level = pcs_ptr->slice_type == I_SLICE ? 1 : 4;
+#else
+                    pcs_ptr->cdef_filter_mode = 2;
+#endif
+#else
+            pcs_ptr->cdef_filter_mode = 5;
+#endif
+#else
+#if MAR10_ADOPTIONS
+            if (pcs_ptr->sc_content_detected)
+                pcs_ptr->cdef_filter_mode = 5;
+            else
+#endif
+                if (pcs_ptr->enc_mode <= ENC_M7)
+                    pcs_ptr->cdef_filter_mode = 5;
+                else
+                    pcs_ptr->cdef_filter_mode = 2;
+#endif
+        }
+        else
+            pcs_ptr->cdef_level = (int8_t)(scs_ptr->static_config.cdef_level);
+    }
+    else
+        pcs_ptr->cdef_level = 0;
+#else
     // CDEF Level                                   Settings
     // 0                                            OFF
     // 1                                            1 step refinement
@@ -2007,6 +2076,7 @@ EbErrorType signal_derivation_multi_processes_oq(
     }
     else
         pcs_ptr->cdef_filter_mode = 0;
+#endif
 
     // SG Level                                    Settings
     // 0                                            OFF

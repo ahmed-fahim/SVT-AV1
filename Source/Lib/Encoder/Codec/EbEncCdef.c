@@ -219,7 +219,16 @@ uint64_t compute_cdef_dist_8bit_c(const uint8_t *dst8, int32_t dstride, const ui
 }
 
 
-
+#if CDEF_CLI
+int32_t get_cdef_gi_step(int8_t cdef_level) {
+    int32_t gi_step = cdef_level == 5
+                        ? 1
+                        : cdef_level == 4
+                                ? 4
+                                : cdef_level == 3 ? 8 : cdef_level == 2 ? 16 : 64;
+    return gi_step;
+}
+#else
 int32_t get_cdef_gi_step(int8_t cdef_filter_mode) {
     int32_t gi_step = cdef_filter_mode == 1
                           ? 1
@@ -228,6 +237,7 @@ int32_t get_cdef_gi_step(int8_t cdef_filter_mode) {
                                 : cdef_filter_mode == 3 ? 8 : cdef_filter_mode == 4 ? 16 : 64;
     return gi_step;
 }
+#endif
 
 int32_t eb_sb_all_skip(PictureControlSet *pcs_ptr, const Av1Common *const cm, int32_t mi_row,
                        int32_t mi_col) {
@@ -1200,6 +1210,16 @@ void finish_cdef_search(EncDecContext *context_ptr, PictureControlSet *pcs_ptr,
     assert(sb_index != NULL);
     assert(selected_strength != NULL);
 
+#if CDEF_CLI
+    gi_step = get_cdef_gi_step(ppcs->cdef_level);
+
+    mid_gi = ppcs->cdf_ref_frame_strength;
+    start_gi = ppcs->use_ref_frame_cdef_strength && ppcs->cdef_level == 5
+                    ? (AOMMAX(0, mid_gi - gi_step))
+                    : 0;
+    end_gi = ppcs->use_ref_frame_cdef_strength ? AOMMIN(total_strengths, mid_gi + gi_step)
+                                               : ppcs->cdef_level == 5 ? 8 : total_strengths;
+#else
     gi_step = get_cdef_gi_step(ppcs->cdef_filter_mode);
 
     mid_gi   = ppcs->cdf_ref_frame_strength;
@@ -1208,6 +1228,7 @@ void finish_cdef_search(EncDecContext *context_ptr, PictureControlSet *pcs_ptr,
                    : 0;
     end_gi = ppcs->use_ref_frame_cdef_strength ? AOMMIN(total_strengths, mid_gi + gi_step)
                                                : ppcs->cdef_filter_mode == 1 ? 8 : total_strengths;
+#endif
 
     uint64_t(*mse[2])[TOTAL_STRENGTHS];
     int32_t       pri_damping = 3 + (frm_hdr->quantization_params.base_q_idx >> 6);

@@ -817,7 +817,11 @@ typedef struct PictureParentControlSet {
     int32_t film_grain_params_present; //todo (AN): Do we need this flag at picture level?
     AomDenoiseAndModel *denoise_and_model;
     RestUnitSearchInfo *rusi_picture[3]; //for 3 planes
+#if CDEF_CLI
+    int8_t              cdef_level;
+#else
     int8_t              cdef_filter_mode;
+#endif
     int32_t             cdef_frame_strength;
     int32_t             cdf_ref_frame_strength;
     int32_t             use_ref_frame_cdef_strength;

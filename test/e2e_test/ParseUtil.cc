@@ -63,7 +63,11 @@ void SequenceHeaderParser::input_obu_data(const uint8_t* obu_data,
         stream_info->enable_ref_frame_mvs =
             seg_header.order_hint_info.enable_ref_frame_mvs;
         stream_info->enable_warped_motion = seg_header.enable_warped_motion;
+#if 1 // CDEF_CLI
+        stream_info->cdef_level = seg_header.cdef_level;
+#else
         stream_info->enable_cdef = seg_header.enable_cdef;
+#endif
         stream_info->enable_restoration = seg_header.enable_restoration;
         stream_info->enable_superres = seg_header.enable_superres;
     }

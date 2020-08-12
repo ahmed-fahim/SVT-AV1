@@ -248,10 +248,17 @@ typedef struct EbSvtAv1EncConfiguration {
     * Default is 1. */
     EbBool enable_global_motion;
 
+#if 1 // CDEF_CLI
+    /* CDEF Level
+    *
+    * Default is -1. */
+    int cdef_level;
+#else
     /* CDEF mode
     *
     * Default is -1. */
     int cdef_mode;
+#endif
 
     /* Restoration filtering
     *  enable/disable
